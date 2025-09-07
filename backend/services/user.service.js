@@ -16,3 +16,7 @@ module.exports.createUser = async({
   })
   return user;
 }
+
+module.exports.getUserByEmail = async(email) => {
+  return await userModel.findOne({ email });
+}

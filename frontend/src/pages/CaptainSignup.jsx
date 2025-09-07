@@ -55,7 +55,7 @@ const CaptainSignup = () => {
    <div>
       <div className='p-7 h-screen flex flex-col justify-between'>
         <div>
-          <img src="/echoride-logo.svg" alt="EchoRide Logo" className="w-32 h-20 mb-5 " />
+          <img src="/echoride-logo.svg" alt="EchoRide Logo" className="w-50 h-32  " />
 
           <form onSubmit={(e) => {
             submitHandler(e)

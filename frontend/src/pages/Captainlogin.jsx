@@ -27,7 +27,7 @@ const CaptainLogin = () => {
        <form onSubmit={(e)=>{
         submitHandelar(e)
        }}>
-         <img src="/echoride-logo.svg" alt="EchoRide Logo" className="w-32 h-20 mb-10" />
+         <img src="/echoride-logo.svg" alt="EchoRide Logo" className="w-50 h-32 " />
         <h3 className='text-lg font-semibold mb-2'>What's your email?</h3>
         <input type="email" required value={email} onChange={(e)=>setEmail(e.target.value)} className='bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base' placeholder="email@example.com" />
         <h3 className='text-lg font-semibold mb-2'>Enter your password?</h3>

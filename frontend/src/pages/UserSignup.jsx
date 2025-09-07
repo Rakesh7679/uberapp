@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-// import axios from 'axios'
-// import { UserDataContext } from '../context/UserContext'
+import axios from 'axios'
+import { UserDataContext } from '../context/UserContext'
 
 
 
@@ -10,49 +10,67 @@ const UserSignup = () => {
   const [ password, setPassword ] = useState('')
   const [ firstName, setFirstName ] = useState('')
   const [ lastName, setLastName ] = useState('')
-  // const [ userData, setUserData ] = useState({})
+  const [ userData, setUserData ] = useState({})
 
-  // const navigate = useNavigate()
+  const navigate = useNavigate()
 
 
 
-  // const { user, setUser } = useContext(UserDataContext)
+  const { user, setUser } = useContext(UserDataContext)
 
 
 
 
   const submitHandler = async (e) => {
     e.preventDefault()
-    const newUser = {
-      fullname: {
-        firstname: firstName,
-        lastname: lastName
-      },
-      email: email,
-      password: password
+    
+    try {
+      const newUser = {
+        fullname: {
+          firstname: firstName,
+          lastname: lastName
+        },
+        email: email,
+        password: password
+      }
+
+      console.log('Sending user data:', newUser)
+      
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser)
+
+      if (response.status === 201) {
+        const data = response.data
+        setUser(data.user)
+        localStorage.setItem('token', data.token)
+        navigate('/home')
+      }
+
+      setEmail('')
+      setFirstName('')
+      setLastName('')
+      setPassword('')
+
+    } catch (error) {
+      console.error('Registration error:', error)
+      if (error.response) {
+        console.error('Error response:', error.response.data)
+        alert(`Error: ${error.response.data.message || error.response.data.error || 'Registration failed'}`)
+      } else if (error.request) {
+        console.error('Network error:', error.request)
+        alert('Network error: Could not connect to server')
+      } else {
+        console.error('Error:', error.message)
+        alert('An unexpected error occurred')
+      }
     }
-
-    // const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser)
-
-    // if (response.status === 201) {
-    //   const data = response.data
-    //   setUser(data.user)
-    //   localStorage.setItem('token', data.token)
-    //   navigate('/home')
-    // }
-
-
-    setEmail('')
-    setFirstName('')
-    setLastName('')
-    setPassword('')
-
   }
   return (
     <div>
       <div className='p-7 h-screen flex flex-col justify-between'>
         <div>
-          <img src="/echoride-logo.svg" alt="EchoRide Logo" className="w-32 h-20 mb-5 " />
+          <div className="flex justify-start ">
+            <img src="/echoride-logo.svg" alt="EchoRide Logo" className="w-50 h-32" />
+          </div>
 
           <form onSubmit={(e) => {
             submitHandler(e)
