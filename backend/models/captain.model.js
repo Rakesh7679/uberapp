@@ -48,7 +48,7 @@ const captainSchema = new mongoose.Schema({
        vehicleType: {
            type: String,
            required: true,
-           enum: ['car', 'motorcycle', 'auto'],
+           enum: ['car', 'moto', 'auto'],
           
        }
     },
@@ -65,7 +65,7 @@ const captainSchema = new mongoose.Schema({
 });
 
 captainSchema.methods.generateAuthToken = function() {
-    const token = jwt.sign({ _id: this._id, email: this.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ _id: this._id, email: this.email }, process.env.JWT_SECRET, { expiresIn: '24h' });
     return token;
 };
 captainSchema.methods.comparePassword = async function(password) {

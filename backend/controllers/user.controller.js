@@ -27,6 +27,7 @@ module.exports.registerUser = async(req, res, next) => {
             password: hashedPassword
         });
         const token = user.generateAuthToken();
+        res.cookie('token', token);
         return res.status(201).json({ user, token });
     } catch (error) {
         console.error('Error in registerUser:', error);
@@ -69,7 +70,7 @@ module.exports.getUserProfile = async(req, res, next) => {
 module.exports.logoutUser = async(req, res, next) => {
     try {
         res.clearCookie('token');
-        const token = req.cookies.token || req.header('Authorization').split(' ')[1];
+        const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
         await blackListTokenModel.create({ token });
         
 

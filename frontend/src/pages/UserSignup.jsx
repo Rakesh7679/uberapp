@@ -65,78 +65,103 @@ const UserSignup = () => {
     }
   }
   return (
-    <div>
-      <div className='p-7 h-screen flex flex-col justify-between'>
-        <div>
-          <div className="flex justify-start ">
-            <img src="/echoride-logo.svg" alt="EchoRide Logo" className="w-50 h-32" />
+    <div className='min-h-screen bg-gradient-to-b from-gray-50 to-white'>
+      <div className='p-6 flex flex-col min-h-screen justify-between max-w-md mx-auto'>
+        <div className='flex-1'>
+          {/* Logo */}
+          <div className='pt-4 pb-6'>
+            <img src="/echoride-logo1.png" alt="EchoRide Logo" className="w-40 h-24" />
           </div>
 
+          {/* Header */}
+          <div className='mb-8'>
+            <h1 className='text-3xl font-bold text-gray-900 mb-2'>Create Account</h1>
+            <p className='text-gray-600'>Join EchoRide and start your journey</p>
+          </div>
+
+          {/* Form */}
           <form onSubmit={(e) => {
             submitHandler(e)
-          }}>
+          }} className='space-y-5'>
 
-            <h3 className='text-lg w-1/2  font-medium mb-2'>What's your name</h3>
-            <div className='flex gap-4 mb-7'>
+            <div>
+              <label className='block text-sm font-semibold text-gray-700 mb-2'>
+                Full Name
+              </label>
+              <div className='flex gap-3'>
+                <input
+                  required
+                  className='flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none text-base'
+                  type="text"
+                  placeholder='First name'
+                  value={firstName}
+                  onChange={(e) => {
+                    setFirstName(e.target.value)
+                  }}
+                />
+                <input
+                  required
+                  className='flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none text-base'
+                  type="text"
+                  placeholder='Last name'
+                  value={lastName}
+                  onChange={(e) => {
+                    setLastName(e.target.value)
+                  }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className='block text-sm font-semibold text-gray-700 mb-2'>
+                Email Address
+              </label>
               <input
                 required
-                className='bg-[#eeeeee] w-1/2 rounded-lg px-4 py-2 border  text-lg placeholder:text-base'
-                type="text"
-                placeholder='First name'
-                value={firstName}
+                value={email}
                 onChange={(e) => {
-                  setFirstName(e.target.value)
+                  setEmail(e.target.value)
                 }}
-              />
-              <input
-                required
-                className='bg-[#eeeeee] w-1/2  rounded-lg px-4 py-2 border  text-lg placeholder:text-base'
-                type="text"
-                placeholder='Last name'
-                value={lastName}
-                onChange={(e) => {
-                  setLastName(e.target.value)
-                }}
+                className='w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none text-base'
+                type="email"
+                placeholder='email@example.com'
               />
             </div>
 
-            <h3 className='text-lg font-medium mb-2'>What's your email</h3>
-            <input
-              required
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value)
-              }}
-              className='bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base'
-              type="email"
-              placeholder='email@example.com'
-            />
-
-            <h3 className='text-lg font-medium mb-2'>Enter Password</h3>
-
-            <input
-              className='bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base'
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-              }}
-              required type="password"
-              placeholder='password'
-            />
+            <div>
+              <label className='block text-sm font-semibold text-gray-700 mb-2'>
+                Password
+              </label>
+              <input
+                className='w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none text-base'
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                }}
+                required
+                type="password"
+                placeholder='Create a strong password'
+              />
+            </div>
 
             <button
-              className='bg-[#111] text-white font-semibold mb-3 rounded-lg px-4 py-2 w-full text-lg placeholder:text-base'
-            >Create account</button>
+              className='w-full bg-black text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:bg-gray-800 shadow-lg hover:shadow-xl transform hover:scale-[1.02] mt-6'
+            >Create Account</button>
 
           </form>
-          <p className='text-center'>Already have a account? <Link to='/login' className='text-blue-600'>Login here</Link></p>
+
+          <p className='text-center mt-6 text-gray-600'>
+            Already have an account? <Link to='/login' className='text-black font-semibold hover:underline'>Sign in</Link>
+          </p>
         </div>
-        <div>
-          <p className='text-[10px] leading-tight'>This site is protected by reCAPTCHA and the <span className='underline'>Google Privacy
-            Policy</span> and <span className='underline'>Terms of Service apply</span>.</p>
+
+        <div className='pb-6'>
+          <p className='text-xs text-gray-500 text-center leading-relaxed'>
+            By continuing, you agree to our <span className='underline cursor-pointer'>Terms of Service</span> and <span className='underline cursor-pointer'>Privacy Policy</span>
+          </p>
         </div>
       </div>
-    </div >
+    </div>
   )
 }
 
