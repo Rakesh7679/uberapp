@@ -35,6 +35,7 @@ const Home = () => {
   const [ride, setRide] = useState(null)
   const [isLocating, setIsLocating] = useState(false)
   const [currentLocation, setCurrentLocation] = useState(null)
+  const [headerPanel, setHeaderPanel] = useState(null)
   const pickupSearchTimer = useRef(null)
   const destinationSearchTimer = useRef(null)
 
@@ -239,17 +240,42 @@ const Home = () => {
       <header className='absolute top-0 left-0 right-0 z-[600] h-16 flex items-center justify-between bg-white/95 border-b border-gray-200 px-6 md:px-16'>
         <img src="/echoride-logo1.png" className='w-28 h-auto' alt="EchoRide" />
         <nav className='hidden md:flex items-center gap-8 text-sm font-semibold'>
-          <span className='border-b-4 border-black py-5'>Ride</span>
-          <span className='text-gray-500'>Rentals</span>
-          <span className='text-gray-500'>Parcel</span>
+          <button onClick={() => setHeaderPanel(null)} className='border-b-4 border-black py-5'>Ride</button>
+          <button onClick={() => setHeaderPanel('rentals')} className='text-gray-500 hover:text-black'>Rentals</button>
+          <button onClick={() => setHeaderPanel('parcel')} className='text-gray-500 hover:text-black'>Parcel</button>
         </nav>
         <div className='flex items-center gap-3'>
-          <span className='hidden sm:block rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold'>Activity</span>
-          <button className='h-10 w-10 rounded-full bg-gray-700 text-white' title='Account'>
+          <button onClick={() => setHeaderPanel('activity')} className='hidden sm:block rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold'>Activity</button>
+          <button onClick={() => navigate('/account')} className='h-10 w-10 rounded-full bg-gray-700 text-white' title='Account'>
             <i className='ri-user-line'></i>
           </button>
         </div>
       </header>
+
+      {headerPanel && (
+        <div className='absolute right-6 top-20 z-[700] w-72 rounded-2xl border border-gray-200 bg-white p-5 shadow-xl'>
+          <button onClick={() => setHeaderPanel(null)} className='float-right text-gray-500' title='Close'>
+            <i className='ri-close-line text-xl'></i>
+          </button>
+          <h2 className='text-lg font-semibold'>
+            {headerPanel === 'activity' && 'Activity'}
+            {headerPanel === 'account' && 'Account'}
+            {headerPanel === 'rentals' && 'Rentals'}
+            {headerPanel === 'parcel' && 'Parcel'}
+          </h2>
+          <p className='mt-3 text-sm text-gray-600'>
+            {headerPanel === 'activity' && 'Your recent rides will appear here.'}
+            {headerPanel === 'account' && 'Manage your EchoRide account.'}
+            {headerPanel === 'rentals' && 'Vehicle rentals are coming soon.'}
+            {headerPanel === 'parcel' && 'Parcel delivery is coming soon.'}
+          </p>
+          {headerPanel === 'account' && (
+            <Link to='/home/users/logout' className='mt-4 block rounded-lg bg-black px-4 py-2 text-center text-sm font-semibold text-white'>
+              Log out
+            </Link>
+          )}
+        </div>
+      )}
 
       <div className='absolute right-0 top-16 h-[calc(100vh-4rem)] w-full bg-white p-4 md:w-[calc(100%-400px)] md:p-8'>
         <div className='h-full w-full overflow-hidden rounded-2xl border border-gray-200 shadow-sm'>
