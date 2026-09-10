@@ -1,7 +1,8 @@
-import React, { useEffect, useContext, useState } from 'react'
+import React, { useEffect, useContext, useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { SocketContext } from '../context/SocketContext'
 import LiveMap from '../components/LiveMap'
+import axios from 'axios'
 
 const Riding = () => {
     const navigate = useNavigate()
@@ -9,25 +10,60 @@ const Riding = () => {
     const { socket } = useContext(SocketContext)
     const ride = location.state?.ride
     const [currentLocation, setCurrentLocation] = useState(null)
+    const [captainLocation, setCaptainLocation] = useState(null)
     const [rideEnded, setRideEnded] = useState(false)
+    const completionPollRef = useRef(null)
+
+    const finishUserRide = () => {
+        if (rideEnded) return
+        setRideEnded(true)
+        clearInterval(completionPollRef.current)
+        window.setTimeout(() => navigate('/home'), 1800)
+    }
 
     useEffect(() => {
         if (!navigator.geolocation) return
 
-        navigator.geolocation.getCurrentPosition(({ coords }) => {
-            setCurrentLocation({ lat: coords.latitude, lng: coords.longitude })
-        })
-    }, [])
+        const updateLocation = ({ coords }) => {
+            const nextLocation = { lat: coords.latitude, lng: coords.longitude }
+            setCurrentLocation(nextLocation)
+            socket.emit('update-location-user', { userId: ride?.user?._id, rideId: ride?._id, location: nextLocation })
+        }
+        const watchId = navigator.geolocation.watchPosition(updateLocation, () => {}, { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 })
+        return () => navigator.geolocation.clearWatch(watchId)
+    }, [ride?._id, ride?.user?._id, socket])
+
+    useEffect(() => {
+        const handleCaptainLocation = (nextLocation) => setCaptainLocation(nextLocation)
+        socket.on('captain-location', handleCaptainLocation)
+        return () => socket.off('captain-location', handleCaptainLocation)
+    }, [socket])
 
     useEffect(() => {
         const handleRideEnded = () => {
-            setRideEnded(true)
-            window.setTimeout(() => navigate('/home'), 1800)
+            finishUserRide()
         }
 
         socket.on('ride-ended', handleRideEnded)
         return () => socket.off('ride-ended', handleRideEnded)
     }, [socket, navigate])
+
+    useEffect(() => {
+        if (!ride?._id) return
+
+        completionPollRef.current = setInterval(async () => {
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_BASE_URL}/rides/status/${ride._id}`,
+                    { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                )
+                if (response.data.status === 'completed') finishUserRide()
+            } catch {
+            }
+        }, 2000)
+
+        return () => clearInterval(completionPollRef.current)
+    }, [ride?._id])
 
     return (
         <div className='h-screen'>
@@ -42,6 +78,7 @@ const Riding = () => {
                     pickup={ride?.pickup}
                     destination={ride?.destination}
                     currentLocation={currentLocation}
+                    otherLocation={captainLocation}
                 />
             </div>
             <div className='h-1/2 p-4'>

@@ -44,6 +44,23 @@ module.exports.getFare = async (req, res) => {
     }
 };
 
+module.exports.getRideStatus = async (req, res) => {
+    try {
+        const ride = await rideModel.findOne({
+            _id: req.params.rideId,
+            user: req.user._id
+        }).populate('captain').select('+otp');
+
+        if (!ride) {
+            return res.status(404).json({ message: 'Ride not found' });
+        }
+
+        return res.status(200).json(ride);
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
 module.exports.confirmRide = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -55,7 +72,13 @@ module.exports.confirmRide = async (req, res) => {
     try {
         const ride = await rideService.confirmRide({ rideId, captain: req.captain });
 
-        if (ride.user && ride.user.socketId) {
+        if (ride.user?._id) {
+            sendMessageToUser(ride.user._id.toString(), {
+                event: 'ride-confirmed',
+                data: ride
+            });
+        }
+        if (ride.user?.socketId) {
             sendMessageToSocketId(ride.user.socketId, {
                 event: 'ride-confirmed',
                 data: ride
@@ -80,7 +103,13 @@ module.exports.startRide = async (req, res) => {
     try {
         const ride = await rideService.startRide({ rideId, otp, captain: req.captain });
 
-        if (ride.user && ride.user.socketId) {
+        if (ride.user?._id) {
+            sendMessageToUser(ride.user._id.toString(), {
+                event: 'ride-started',
+                data: ride
+            });
+        }
+        if (ride.user?.socketId) {
             sendMessageToSocketId(ride.user.socketId, {
                 event: 'ride-started',
                 data: ride

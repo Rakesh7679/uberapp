@@ -134,10 +134,14 @@ module.exports.endRide = async ({ rideId, captain }) => {
         throw new Error('Ride not ongoing');
     }
 
+    const distanceTime = await mapService.getDistanceTime(ride.pickup, ride.destination);
+
     await rideModel.findOneAndUpdate({
         _id: rideId
     }, {
-        status: 'completed'
+        status: 'completed',
+        distance: distanceTime.distance.value,
+        duration: distanceTime.duration.value
     });
 
     return ride;

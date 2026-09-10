@@ -1,9 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useContext } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import FinishRide from '../components/FinishRide'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import LiveMap from '../components/LiveMap'
+import { SocketContext } from '../context/SocketContext'
 
 const CaptainRiding = () => {
     const [finishRidePanel, setFinishRidePanel] = useState(false)
@@ -11,12 +12,16 @@ const CaptainRiding = () => {
     const location = useLocation()
     const ride = location.state?.ride
     const [currentLocation, setCurrentLocation] = useState(null)
+    const [userLocation, setUserLocation] = useState(null)
+    const { socket } = useContext(SocketContext)
 
     useEffect(() => {
         if (!navigator.geolocation) return
 
         const updateCurrentLocation = ({ coords }) => {
-            setCurrentLocation({ lat: coords.latitude, lng: coords.longitude })
+            const nextLocation = { lat: coords.latitude, lng: coords.longitude }
+            setCurrentLocation(nextLocation)
+            socket.emit('update-location-captain', { userId: ride?.captain?._id, rideId: ride?._id, location: nextLocation })
         }
 
         const watchId = navigator.geolocation.watchPosition(updateCurrentLocation, (error) => {
@@ -24,7 +29,13 @@ const CaptainRiding = () => {
         }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 })
 
         return () => navigator.geolocation.clearWatch(watchId)
-    }, [])
+    }, [ride?._id, ride?.captain?._id, socket])
+
+    useEffect(() => {
+        const handleUserLocation = (nextLocation) => setUserLocation(nextLocation)
+        socket.on('user-location', handleUserLocation)
+        return () => socket.off('user-location', handleUserLocation)
+    }, [socket])
 
     useGSAP(() => {
         if (finishRidePanel) {
@@ -53,6 +64,7 @@ const CaptainRiding = () => {
                         pickup={ride?.pickup}
                         destination={ride?.destination}
                         currentLocation={currentLocation}
+                        otherLocation={userLocation}
                         requireCurrentLocation
                     />
                 </div>

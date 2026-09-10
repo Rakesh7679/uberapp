@@ -2,6 +2,7 @@ const blacklistTokenModel = require('../models/blacklistToken.model');
 const captainModel = require('../models/captain.model');
 const captainService = require('../services/captain.service');
 const { validationResult } = require('express-validator');
+const rideModel = require('../models/ride.model');
 
 
 module.exports.registerCaptain = async(req, res, next) => {
@@ -63,6 +64,33 @@ module.exports.getCaptainProfile = async (req, res, next) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 }
+
+module.exports.getCaptainStats = async (req, res) => {
+    try {
+        const [stats] = await rideModel.aggregate([
+            { $match: { captain: req.captain._id, status: 'completed' } },
+            {
+                $group: {
+                    _id: null,
+                    totalTrips: { $sum: 1 },
+                    distanceMeters: { $sum: { $ifNull: ['$distance', 0] } },
+                    durationSeconds: { $sum: { $ifNull: ['$duration', 0] } },
+                    earnings: { $sum: { $ifNull: ['$fare', 0] } }
+                }
+            }
+        ]);
+
+        return res.status(200).json({
+            totalTrips: stats?.totalTrips || 0,
+            distanceKm: Number(((stats?.distanceMeters || 0) / 1000).toFixed(1)),
+            drivingHours: Number(((stats?.durationSeconds || 0) / 3600).toFixed(1)),
+            earnings: stats?.earnings || 0
+        });
+    } catch (error) {
+        console.error('Error in getCaptainStats:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
 module.exports.logoutCaptain = async (req, res, next) => {
     try {
         const token = req.cookies.token || req.header('Authorization')?.split(' ')[1];

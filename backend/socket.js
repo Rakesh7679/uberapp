@@ -1,6 +1,7 @@
 const socketIo = require('socket.io');
 const userModel = require('./models/user.model');
 const captainModel = require('./models/captain.model');
+const rideModel = require('./models/ride.model');
 
 let io;
 
@@ -28,7 +29,7 @@ function initializeSocket(server) {
         });
 
         socket.on('update-location-captain', async (data) => {
-            const { userId, location } = data;
+            const { userId, rideId, location } = data;
 
             if (!location || !location.lat || !location.lng) {
                 return socket.emit('error', { message: 'Invalid location data' });
@@ -40,6 +41,27 @@ function initializeSocket(server) {
                     lng: location.lng
                 }
             });
+
+            if (rideId) {
+                const ride = await rideModel.findOne({ _id: rideId, captain: userId });
+                if (ride) sendMessageToUser(ride.user.toString(), {
+                    event: 'captain-location',
+                    data: location
+                });
+            }
+        });
+
+        socket.on('update-location-user', async (data) => {
+            const { userId, rideId, location } = data;
+            if (!location || !location.lat || !location.lng || !rideId) return;
+
+            const ride = await rideModel.findOne({ _id: rideId, user: userId }).populate('captain');
+            if (ride?.captain?.socketId) {
+                sendMessageToSocketId(ride.captain.socketId, {
+                    event: 'user-location',
+                    data: location
+                });
+            }
         });
 
         socket.on('disconnect', () => {

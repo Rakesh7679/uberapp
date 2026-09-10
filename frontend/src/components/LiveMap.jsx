@@ -2,11 +2,17 @@ import React, { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-const LiveMap = ({ pickup, destination, currentLocation, requireCurrentLocation = false }) => {
+const LiveMap = ({ pickup, destination, currentLocation, otherLocation, requireCurrentLocation = false, onMapDoubleClick }) => {
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
   const routeLayerRef = useRef(null)
   const currentMarkerRef = useRef(null)
+  const otherMarkerRef = useRef(null)
+  const doubleClickHandlerRef = useRef(onMapDoubleClick)
+
+  useEffect(() => {
+    doubleClickHandlerRef.current = onMapDoubleClick
+  }, [onMapDoubleClick])
 
   const geocode = async (query) => {
     const apiKey = import.meta.env.VITE_MAPTILER_API_KEY
@@ -39,10 +45,16 @@ const LiveMap = ({ pickup, destination, currentLocation, requireCurrentLocation 
       scrollWheelZoom: true,
       touchZoom: true,
       dragging: true,
-      doubleClickZoom: true,
+      doubleClickZoom: false,
       boxZoom: true,
       keyboard: true,
     }).setView([22.5726, 88.3639], 13)
+    map.on('dblclick', (event) => {
+      doubleClickHandlerRef.current?.({
+        lat: event.latlng.lat,
+        lng: event.latlng.lng
+      })
+    })
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map)
@@ -68,6 +80,20 @@ const LiveMap = ({ pickup, destination, currentLocation, requireCurrentLocation 
       fillOpacity: 1,
     }).addTo(mapInstanceRef.current)
   }, [currentLocation])
+
+  useEffect(() => {
+    if (!mapInstanceRef.current || !otherLocation) return
+
+    const position = [otherLocation.lat, otherLocation.lng]
+    otherMarkerRef.current?.remove()
+    otherMarkerRef.current = L.circleMarker(position, {
+      radius: 8,
+      color: '#ffffff',
+      weight: 3,
+      fillColor: '#ef4444',
+      fillOpacity: 1,
+    }).addTo(mapInstanceRef.current)
+  }, [otherLocation])
 
   useEffect(() => {
     if (!mapInstanceRef.current || (!pickup && !currentLocation) || !destination) return

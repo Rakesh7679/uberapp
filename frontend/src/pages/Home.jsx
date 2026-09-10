@@ -38,6 +38,7 @@ const Home = () => {
   const [headerPanel, setHeaderPanel] = useState(null)
   const pickupSearchTimer = useRef(null)
   const destinationSearchTimer = useRef(null)
+  const rideStatusPollRef = useRef(null)
 
   const navigate = useNavigate()
   const { socket } = useContext(SocketContext)
@@ -52,11 +53,13 @@ const Home = () => {
 
   useEffect(() => {
     const handleRideConfirmed = (confirmedRide) => {
+      clearInterval(rideStatusPollRef.current)
       setVehicleFound(false)
       setWaitingForDriver(true)
       setRide(confirmedRide)
     }
     const handleRideStarted = (startedRide) => {
+      clearInterval(rideStatusPollRef.current)
       setWaitingForDriver(false)
       navigate('/riding', { state: { ride: startedRide } })
     }
@@ -68,6 +71,8 @@ const Home = () => {
       socket.off('ride-started', handleRideStarted)
     }
   }, [navigate, socket])
+
+  useEffect(() => () => clearInterval(rideStatusPollRef.current), [])
 
   const handlePickupChange = async (e) => {
     const input = e.target.value
@@ -146,6 +151,20 @@ const Home = () => {
     )
   }
 
+  const selectMapDestination = async ({ lat, lng }) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+      )
+      const data = await response.json()
+      setDestination(data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`)
+    } catch {
+      setDestination(`${lat.toFixed(6)}, ${lng.toFixed(6)}`)
+    }
+    setActiveField('destination')
+    setPanelOpen(false)
+  }
+
   const submitHandler = async (e) => {
     e.preventDefault()
   }
@@ -174,6 +193,28 @@ const Home = () => {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
     })
+
+    const createdRide = response.data
+    setRide(createdRide)
+    clearInterval(rideStatusPollRef.current)
+    rideStatusPollRef.current = setInterval(async () => {
+      try {
+        const statusResponse = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/rides/status/${createdRide._id}`,
+          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        )
+        const updatedRide = statusResponse.data
+        if (updatedRide.status === 'accepted') {
+          setVehicleFound(false)
+          setWaitingForDriver(true)
+          setRide(updatedRide)
+        } else if (updatedRide.status === 'ongoing') {
+          clearInterval(rideStatusPollRef.current)
+          navigate('/riding', { state: { ride: updatedRide } })
+        }
+      } catch {
+      }
+    }, 2000)
   }
 
     useGSAP(() => {
@@ -279,7 +320,12 @@ const Home = () => {
 
       <div className='absolute right-0 top-16 h-[calc(100vh-4rem)] w-full bg-white p-4 md:w-[calc(100%-400px)] md:p-8'>
         <div className='h-full w-full overflow-hidden rounded-2xl border border-gray-200 shadow-sm'>
-          <LiveMap pickup={pickup} destination={destination} currentLocation={currentLocation} />
+          <LiveMap
+            pickup={pickup}
+            destination={destination}
+            currentLocation={currentLocation}
+            onMapDoubleClick={selectMapDestination}
+          />
         </div>
       </div>
 
@@ -359,7 +405,7 @@ const Home = () => {
         />
         </div>
 
-         <div ref={confirmRidePanelRef} className='fixed w-full z-10 bottom-0 bg-white p-3 translate-y-full px-3 py-10 pt-12'>
+         <div ref={confirmRidePanelRef} className='fixed bottom-0 z-10 h-[calc(100dvh-5rem)] max-h-[92vh] w-full overflow-y-auto bg-white p-3 px-3 pb-10 pt-8 translate-y-full md:h-auto md:max-h-[90vh] md:py-10 md:pt-12'>
         <ConfirmedRide
           createRide={createRide}
           pickup={pickup}
