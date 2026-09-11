@@ -11,7 +11,16 @@ const mapsRoutes = require('./routes/maps.routes');
 const rideRoutes = require('./routes/ride.routes');
 
 
-app.use(cors());
+const allowedOrigins = [
+    process.env.FRONTEND_URL || 'https://echo-ride.netlify.app',
+    'http://localhost:5173',
+    'http://localhost:5174'
+];
+
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+}));
 connectToDb();
 app.use(cookieParser());
 app.use(express.json());

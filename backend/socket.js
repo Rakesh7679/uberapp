@@ -8,7 +8,12 @@ let io;
 function initializeSocket(server) {
     io = socketIo(server, {
         cors: {
-            origin: '*',
+            origin: [
+                process.env.FRONTEND_URL || 'https://echo-ride.netlify.app',
+                'http://localhost:5173',
+                'http://localhost:5174'
+            ],
+            credentials: true,
             methods: [ 'GET', 'POST' ]
         }
     });
