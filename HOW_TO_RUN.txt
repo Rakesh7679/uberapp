@@ -1,0 +1,92 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║          ECHO RIDE - NEXT.JS CONVERSION - HOW TO RUN                      ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+📦 STEP 1: EXTRACT THE PROJECT
+────────────────────────────────
+tar -xzf uber-nextjs-project.tar.gz
+cd uber-nextjs
+
+📦 STEP 2: INSTALL DEPENDENCIES
+────────────────────────────────
+npm install
+
+🔧 STEP 3: CONFIGURE ENVIRONMENT
+────────────────────────────────
+✓ File .env.local already has: NEXT_PUBLIC_API_URL=http://localhost:4000
+✓ If backend is on different port, update .env.local
+
+📋 STEP 4: COPY LOGO (IMPORTANT!)
+────────────────────────────────
+Copy echoride-logo1.png from original project:
+- Source: ../frontend/dist/ or ../frontend/public/
+- Destination: uber-nextjs/public/
+
+▶️ STEP 5: START BACKEND (NEW TERMINAL)
+────────────────────────────────
+cd ../backend
+npm install  # if not done
+npm start
+# Backend will run on http://localhost:4000
+
+▶️ STEP 6: START FRONTEND (ORIGINAL TERMINAL)
+────────────────────────────────
+npm run dev
+# Frontend will run on http://localhost:3000
+
+✅ STEP 7: TEST
+────────────────────────────────
+Open http://localhost:3000 in browser
+- Landing page at /start
+- Login/Signup at /login and /signup
+- Try user and captain flows
+
+🎯 COMMON COMMANDS
+────────────────────────────────
+npm run dev      → Start dev server
+npm run build    → Build for production
+npm start        → Start prod server
+npm run lint     → Check code
+
+🔍 FOLDER STRUCTURE
+────────────────────────────────
+uber-nextjs/
+├── src/app/          ← All pages
+├── src/components/   ← React components
+├── src/context/      ← User, Captain, Socket contexts
+├── src/lib/          ← Axios configuration
+├── public/           ← Static files (add logo here)
+└── package.json      ← Dependencies
+
+⚠️ TROUBLESHOOTING
+────────────────────────────────
+Port 3000 in use?
+  → PORT=3001 npm run dev
+
+Backend not connecting?
+  → Check backend running on :4000
+  → Check .env.local NEXT_PUBLIC_API_URL
+
+Missing dependencies?
+  → rm -rf node_modules && npm install
+
+Module not found?
+  → npm install
+  → Restart dev server
+
+Logo not showing?
+  → Copy to public/echoride-logo1.png
+  → Refresh browser
+
+📚 DOCUMENTATION
+────────────────────────────────
+- Setup Guide: NEXTJS_SETUP_GUIDE.md
+- Project README: uber-nextjs/README.md
+- This file: HOW_TO_RUN.txt
+- Summary: DELIVERY_SUMMARY.md
+
+🎉 YOU'RE READY TO GO!
+────────────────────────────────
+Follow the 7 steps above and you're all set!
+
+Questions? Check NEXTJS_SETUP_GUIDE.md for detailed instructions.
